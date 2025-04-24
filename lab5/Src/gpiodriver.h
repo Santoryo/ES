@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+// GPIO SECTION
+
 typedef struct {
     volatile uint32_t MODER;    // Offset 0x00: Mode register
     volatile uint32_t OTYPER;   // Offset 0x04: Output type register
@@ -81,33 +83,6 @@ typedef struct {
 #define PWR_BASE (0x40007000)
 #define PWR_CR2 ((volatile uint32_t*)(PWR_BASE + 0x04))
 
-#define TIM6_BASE (0x40001000)
-
-typedef struct {
-    volatile uint16_t CR1;       // Offset 0x00: Control register 1
-    uint16_t RESERVED1;          // Reserved
-    volatile uint16_t CR2;       // Offset 0x04: Control register 2
-    uint16_t RESERVED2;          // Reserved
-    uint32_t RESERVED3;          // Reserved Offset 0x08
-    volatile uint16_t TIMx_DIER; // Offset 0x0C: DMA/Interrupt enable register
-    uint16_t RESERVED4;          // Reserved
-    volatile uint16_t TIMx_SR;   // Offset 0x10: Status register
-    uint16_t RESERVED5;          // Reserved
-    volatile uint16_t TIMx_EGR;  // Offset 0x14: Event generation register
-    uint16_t RESERVED6;          // Reserved
-    uint32_t RESERVED7;          // Reserved Offset 0x18
-    uint32_t RESERVED8;         // Reserved Offset 0x1C
-    uint32_t RESERVED9;         // Reserved Offset 0x20
-    volatile uint32_t TIMx_CNT;  // Offset 0x24: Counter register
-    volatile uint16_t TIMx_PSC;  // Offset 0x28: Prescaler register
-    uint16_t RESERVED10;         // Reserved
-    volatile uint16_t TIMx_ARR;  // Offset 0x2C: Auto-reload register
-    uint16_t RESERVED11;         // Reserved
-} TIMx_TypeDef;
-
-#define TIM6 ((TIMx_TypeDef*) TIM6_BASE)
-
-
 typedef struct {
 	uint32_t Pin;
 	uint32_t Mode;
@@ -172,6 +147,35 @@ void delay(volatile uint32_t val)
 {
 	for(int i = 0; i <= val*100; i++);
 }
+
+
+// TIM SECTION
+
+#define TIM6_BASE (0x40001000)
+
+typedef struct {
+    volatile uint16_t CR1;       // Offset 0x00: Control register 1
+    uint16_t RESERVED1;          // Reserved
+    volatile uint16_t CR2;       // Offset 0x04: Control register 2
+    uint16_t RESERVED2;          // Reserved
+    uint32_t RESERVED3;          // Reserved Offset 0x08
+    volatile uint16_t TIMx_DIER; // Offset 0x0C: DMA/Interrupt enable register
+    uint16_t RESERVED4;          // Reserved
+    volatile uint16_t TIMx_SR;   // Offset 0x10: Status register
+    uint16_t RESERVED5;          // Reserved
+    volatile uint16_t TIMx_EGR;  // Offset 0x14: Event generation register
+    uint16_t RESERVED6;          // Reserved
+    uint32_t RESERVED7;          // Reserved Offset 0x18
+    uint32_t RESERVED8;         // Reserved Offset 0x1C
+    uint32_t RESERVED9;         // Reserved Offset 0x20
+    volatile uint32_t TIMx_CNT;  // Offset 0x24: Counter register
+    volatile uint16_t TIMx_PSC;  // Offset 0x28: Prescaler register
+    uint16_t RESERVED10;         // Reserved
+    volatile uint16_t TIMx_ARR;  // Offset 0x2C: Auto-reload register
+    uint16_t RESERVED11;         // Reserved
+} TIMx_TypeDef;
+
+#define TIM6 ((TIMx_TypeDef*) TIM6_BASE)
 
 void tim6_init()
 {
