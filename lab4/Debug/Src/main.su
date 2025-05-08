@@ -7,6 +7,6 @@
 ../Src/gpiodriver.h:138:6:enable_VddIO2	8	static
 ../Src/gpiodriver.h:144:6:delay	24	static
 ../Src/main.c:52:6:init_seven_segment	48	static
-../Src/main.c:80:6:init_joystick	32	static
-../Src/main.c:95:6:setNumber	48	static
+../Src/main.c:81:6:init_joystick	32	static
+../Src/main.c:97:6:setNumber	48	static
 ../Src/main.c:119:5:main	16	static

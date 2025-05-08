@@ -1,20 +1,29 @@
 #pragma once
 #include <stdint.h>
 
+// MAIN
+typedef volatile uint32_t REG32;
+typedef volatile uint16_t REG16;
+typedef volatile uint8_t REG8;
+
+typedef uint32_t RESTRICTED32;
+typedef uint16_t RESTRICTED16;
+typedef uint8_t RESTRICTED8;
+
 // GPIO SECTION
 
 typedef struct {
-    volatile uint32_t MODER;    // Offset 0x00: Mode register
-    volatile uint32_t OTYPER;   // Offset 0x04: Output type register
-    volatile uint32_t OSPEEDR;  // Offset 0x08: Output speed register
-    volatile uint32_t PUPDR;    // Offset 0x0C: Pull-up/pull-down register
-    volatile uint32_t IDR;      // Offset 0x10: Input data register
-    volatile uint32_t ODR;      // Offset 0x14: Output data register
-    volatile uint32_t BSRR;     // Offset 0x18: Bit set/reset register
-    volatile uint32_t LCKR;     // Offset 0x1C: Configuration lock register
-    volatile uint32_t AFRL;     // Offset 0x20: Alternate function low register
-    volatile uint32_t AFRH;     // Offset 0x24: Alternate function high register
-    volatile uint32_t BRR;      // Offset 0x28: Bit reset register
+    REG32 MODER;    // Offset 0x00: Mode register
+    REG32 OTYPER;   // Offset 0x04: Output type register
+    REG32 OSPEEDR;  // Offset 0x08: Output speed register
+    REG32 PUPDR;    // Offset 0x0C: Pull-up/pull-down register
+    REG32 IDR;      // Offset 0x10: Input data register
+    REG32 ODR;      // Offset 0x14: Output data register
+    REG32 BSRR;     // Offset 0x18: Bit set/reset register
+    REG32 LCKR;     // Offset 0x1C: Configuration lock register
+    REG32 AFRL;     // Offset 0x20: Alternate function low register
+    REG32 AFRH;     // Offset 0x24: Alternate function high register
+    REG32 BRR;      // Offset 0x28: Bit reset register
 } GPIO_TypeDef;
 
 // base addresses
@@ -77,11 +86,8 @@ typedef struct {
 #define GPIOHEN 7
 #define GPIOIEN 8
 
-#define RCC_BASE (0x40021000)
-#define RCC_AHBxENR ((volatile uint32_t*)(RCC_BASE + 0x4C))
-
 #define PWR_BASE (0x40007000)
-#define PWR_CR2 ((volatile uint32_t*)(PWR_BASE + 0x04))
+#define PWR_CR2 ((REG32*)(PWR_BASE + 0x04))
 
 typedef struct {
 	uint32_t Pin;
@@ -96,17 +102,21 @@ typedef struct Pin {
 } Pin;
 
 
-void set_bit(volatile uint32_t *reg, unsigned int bit_pos) {
+void set_bit(REG32 *reg, unsigned int bit_pos) {
     *reg |= (1 << bit_pos);
 }
 
-void clear_bit(volatile uint32_t *reg,  uint32_t bit_pos) {
+void clear_bit(REG32 *reg,  uint32_t bit_pos) {
     *reg &= ~(1 << bit_pos);
 }
 
-void activate_clock_for(int gpio_en_bit)
+uint32_t read_bit(REG32 *reg, uint32_t bit_pos) {
+    return (*reg & (1 << bit_pos)) ? 1 : 0;
+}
+
+void activate_clock_for(REG32 *reg, int gpio_en_bit)
 {
-    *RCC_AHBxENR |= (1 << gpio_en_bit);
+    *reg |= (1 << gpio_en_bit);
 }
 
 void gpio_init(GPIO_TypeDef *GPIOx, GPIO_InitStruct *init)
@@ -126,9 +136,9 @@ void gpio_init(GPIO_TypeDef *GPIOx, GPIO_InitStruct *init)
 void gpio_write_pin(GPIO_TypeDef *GPIOx, uint32_t pin, uint32_t state)
 {
     if (state == HIGH) {
-        GPIOx->BSRR = (1 << pin);
+        set_bit(&GPIOx->BSRR, pin);
     } else {
-        GPIOx->BRR = (1 << pin);
+        set_bit(&GPIOx->BRR, pin);
     }
 }
 
@@ -142,11 +152,58 @@ void enable_VddIO2()
     set_bit(PWR_CR2, 9);
 }
 
+// RCC SECTION
 
-void delay(volatile uint32_t val)
-{
-	for(int i = 0; i <= val*100; i++);
-}
+#define RCC_BASE (0x40021000)
+#define RCC ((RCC_TypeDef*) RCC_BASE)
+
+typedef struct {
+    REG32 CR;             // Offset 0x00: Clock control register
+    REG32 ICSCR;          // Offset 0x04: Internal clock sources calibration register
+    REG32 CFGR;           // Offset 0x08: Clock configuration register
+    REG32 PLLCFGR;        // Offset 0x0C: PLL configuration register
+    REG32 PLLSAI1CFGR;    // Offset 0x10: PLLSAI1 configuration register
+    REG32 PLLSAI2CFGR;    // Offset 0x14: PLLSAI2 configuration register
+    volatile uint8_t CIER;            // Offset 0x18: Clock interrupt enable register (only 8 bits used)
+    uint8_t RESERVED0[3];             // Offset 0x19–0x1B: Reserved
+    volatile uint8_t CIFR;            // Offset 0x1C: Clock interrupt flag register (only 8 bits used)
+    uint8_t RESERVED1[3];             // Offset 0x1D–0x1F: Reserved
+    volatile uint8_t CICR;            // Offset 0x20: Clock interrupt clear register (only 8 bits used)
+    uint8_t RESERVED2[3];             // Offset 0x21–0x23: Reserved
+    uint8_t RESERVED3[4];             // Offset 0x24–0x27: Reserved
+    REG32 AHB1RSTR;       // Offset 0x28: AHB1 peripheral reset register
+    REG32 AHB2RSTR;       // Offset 0x2C: AHB2 peripheral reset register
+    REG32 AHB3RSTR;       // Offset 0x30: AHB3 peripheral reset register
+    uint8_t RESERVED4[4];             // Offset 0x34: Reserved
+    REG32 APB1RSTR1;      // Offset 0x38: APB1 peripheral reset register 1
+    REG32 APB1RSTR2;      // Offset 0x3C: APB1 peripheral reset register 2
+    REG32 APB2RSTR;       // Offset 0x40: APB2 peripheral reset register
+    uint8_t RESERVED5[4];             // Offset 0x44: Reserved
+    REG32 AHB1ENR;        // Offset 0x48: AHB1 peripheral clocks enable register
+    REG32 AHB2ENR;        // Offset 0x4C: AHB2 peripheral clocks enable register
+    REG32 AHB3ENR;        // Offset 0x50: AHB3 peripheral clocks enable register
+    uint8_t RESERVED6[4];             // Offset 0x54: Reserved
+    REG32 APB1ENR1;       // Offset 0x58: APB1 peripheral clocks enable register 1
+    REG32 APB1ENR2;       // Offset 0x5C: APB1 peripheral clocks enable register 2
+    REG32 APB2ENR;        // Offset 0x60: APB2 peripheral clocks enable register
+    uint8_t RESERVED7[4];             // Offset 0x64: Reserved
+    REG32 AHB1SMENR;      // Offset 0x68: AHB1 clocks enable in Sleep/Stop modes register
+    REG32 AHB2SMENR;      // Offset 0x6C: AHB2 clocks enable in Sleep/Stop modes register
+    REG32 AHB3SMENR;      // Offset 0x70: AHB3 clocks enable in Sleep/Stop modes register
+    uint8_t RESERVED8[4];             // Offset 0x74: Reserved
+    REG32 APB1SMENR1;     // Offset 0x78: APB1 Sleep/Stop enable register 1
+    REG32 APB1SMENR2;     // Offset 0x7C: APB1 Sleep/Stop enable register 2
+    REG32 APB2SMENR;      // Offset 0x80: APB2 Sleep/Stop enable register
+    uint8_t RESERVED9[4];             // Offset 0x84: Reserved
+    REG32 CCIPR;          // Offset 0x88: Clock configuration independent register
+    uint8_t RESERVED10[4];            // Offset 0x8C: Reserved
+    REG32 BDCR;           // Offset 0x90: Backup domain control register
+    REG32 CSR;            // Offset 0x94: Control/status register
+    REG32 CRRCR;          // Offset 0x98: Clock recovery RC register
+    volatile uint8_t CCIPR2;          // Offset 0x9C: Peripherals independent clock config reg 2 (only bits 0–1 used)
+    uint8_t RESERVED11[3];            // Offset 0x9D–0x9F: Reserved
+} RCC_TypeDef;
+
 
 
 // TIM SECTION
@@ -154,24 +211,24 @@ void delay(volatile uint32_t val)
 #define TIM6_BASE (0x40001000)
 
 typedef struct {
-    volatile uint16_t CR1;       // Offset 0x00: Control register 1
+    REG16 CR1;       // Offset 0x00: Control register 1
     uint16_t RESERVED1;          // Reserved
-    volatile uint16_t CR2;       // Offset 0x04: Control register 2
+    REG16 CR2;       // Offset 0x04: Control register 2
     uint16_t RESERVED2;          // Reserved
     uint32_t RESERVED3;          // Reserved Offset 0x08
-    volatile uint16_t TIMx_DIER; // Offset 0x0C: DMA/Interrupt enable register
+    REG16 DIER; // Offset 0x0C: DMA/Interrupt enable register
     uint16_t RESERVED4;          // Reserved
-    volatile uint16_t TIMx_SR;   // Offset 0x10: Status register
+    REG16 SR;   // Offset 0x10: Status register
     uint16_t RESERVED5;          // Reserved
-    volatile uint16_t TIMx_EGR;  // Offset 0x14: Event generation register
+    REG16 EGR;  // Offset 0x14: Event generation register
     uint16_t RESERVED6;          // Reserved
     uint32_t RESERVED7;          // Reserved Offset 0x18
     uint32_t RESERVED8;         // Reserved Offset 0x1C
     uint32_t RESERVED9;         // Reserved Offset 0x20
-    volatile uint32_t TIMx_CNT;  // Offset 0x24: Counter register
-    volatile uint16_t TIMx_PSC;  // Offset 0x28: Prescaler register
+    REG32 CNT;  // Offset 0x24: Counter register
+    REG16 PSC;  // Offset 0x28: Prescaler register
     uint16_t RESERVED10;         // Reserved
-    volatile uint16_t TIMx_ARR;  // Offset 0x2C: Auto-reload register
+    REG16 ARR;  // Offset 0x2C: Auto-reload register
     uint16_t RESERVED11;         // Reserved
 } TIMx_TypeDef;
 
@@ -179,6 +236,36 @@ typedef struct {
 
 void tim6_init()
 {
-    activate_clock_for(4);
+    activate_clock_for(&RCC->APB1ENR1, 4); // Enable TIM6 clock (bit 4)
 
+    TIM6->PSC = 3999;
+    TIM6->ARR = 999;
+
+    TIM6->CR1 |= (1 << 0);
+}
+
+void delay(uint32_t seconds)
+{
+    for (uint32_t i = 0; i < seconds; i++) {
+        while (!(TIM6->SR & 1));
+        TIM6->SR &= ~1;
+    }
+}
+
+void delay_ms(uint32_t ms)
+{
+    while (ms >= 1000) {
+        delay(1);
+        ms -= 1000;
+    }
+
+    if (ms > 0) {
+        uint32_t start = TIM6->CNT;
+        while ((TIM6->CNT - start) < ms) {
+            if (TIM6->CNT < start) {
+                while ((1000 - start + TIM6->CNT) < ms);
+                break;
+            }
+        }
+    }
 }

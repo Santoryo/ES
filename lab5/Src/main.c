@@ -40,7 +40,7 @@ int numbers[10][7] = {
     {ON, ON, ON, ON, OFF, ON, ON}     // 9
 };
 
-int counter = 1;
+int counter = 0;
 int cycle = 0;
 
 
@@ -52,8 +52,8 @@ int cycle = 0;
 void init_seven_segment()
 {
 	enable_VddIO2();
-	activate_clock_for(GPIOBEN);
-	activate_clock_for(GPIOGEN);
+	activate_clock_for(&RCC->AHB2ENR, GPIOBEN);
+	activate_clock_for(&RCC->AHB2ENR, GPIOGEN);
 
 	for(int i = 0; i < 7; i++)
 	{
@@ -80,7 +80,7 @@ void init_seven_segment()
 
 void init_joystick()
 {
-	activate_clock_for(GPIOEEN);
+	activate_clock_for(&RCC->AHB2ENR, GPIOEEN);
 
 	for(int i = 0; i < 4; i++)
 	{
@@ -110,7 +110,7 @@ void setNumber(int num)
 		  gpio_write_pin(seventSegmentDisplay[i].port, seventSegmentDisplay[i].pin, numbers[d[j]][i]);
 	  }
 	  gpio_write_pin(digits[j].port, digits[j].pin, HIGH);
-	  delay(15);
+	  delay_ms(1);
 	  gpio_write_pin(digits[j].port, digits[j].pin, LOW);
 	}
 }
@@ -120,27 +120,21 @@ int main(void)
 {
 	init_seven_segment();
 	init_joystick();
+	tim6_init();
 	while(1)
 	{
-		setNumber(counter);
 		int clicked = !gpio_read_pin(GPIOE, 15);
+		setNumber(counter);
 
+		 if (read_bit(&TIM6->SR, 0))
+		 {
+			clear_bit(&TIM6->SR, 0);
+		 	clicked ? counter-- : counter++;
 
-		if(cycle >= DELAY)
-		{
-			clicked ? counter-- : counter++;
-
-			if(counter > COUNTER_MAX)
-			{
-				counter = COUNTER_MIN;
-			}
-			else if(counter < COUNTER_MIN)
-			{
-				counter = COUNTER_MAX;
-			}
-
-			cycle = 0;
-		}
-		cycle++;
+		 	if(counter > COUNTER_MAX)
+		 		counter = COUNTER_MIN;
+		 	else if(counter < COUNTER_MIN)
+		 		counter = COUNTER_MAX;
+		 }
 	}
 }

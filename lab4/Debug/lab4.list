@@ -1,5 +1,5 @@
 
-lab5.elf:     file format elf32-littlearm
+lab4.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -449,6 +449,7 @@ void init_seven_segment()
 
 0800043c <init_joystick>:
 
+
 void init_joystick()
 {
  800043c:	b580      	push	{r7, lr}
@@ -457,6 +458,7 @@ void init_joystick()
 	activate_clock_for(GPIOEEN);
  8000442:	2004      	movs	r0, #4
  8000444:	f7ff fee6 	bl	8000214 <activate_clock_for>
+
 	for(int i = 0; i < 4; i++)
  8000448:	2300      	movs	r3, #0
  800044a:	617b      	str	r3, [r7, #20]
@@ -685,8 +687,6 @@ void setNumber(int num)
  80005ec:	20000038 	.word	0x20000038
 
 080005f0 <main>:
-
-
 
 
 int main(void)
