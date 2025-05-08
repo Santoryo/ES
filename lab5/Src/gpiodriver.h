@@ -18,17 +18,23 @@ typedef uint8_t RESTRICTED8;
 
 typedef struct
 {
-    REG32 MODER;   // Offset 0x00: Mode register
-    REG32 OTYPER;  // Offset 0x04: Output type register
-    REG32 OSPEEDR; // Offset 0x08: Output speed register
-    REG32 PUPDR;   // Offset 0x0C: Pull-up/pull-down register
-    REG32 IDR;     // Offset 0x10: Input data register
-    REG32 ODR;     // Offset 0x14: Output data register
-    REG32 BSRR;    // Offset 0x18: Bit set/reset register
-    REG32 LCKR;    // Offset 0x1C: Configuration lock register
-    REG32 AFRL;    // Offset 0x20: Alternate function low register
-    REG32 AFRH;    // Offset 0x24: Alternate function high register
-    REG32 BRR;     // Offset 0x28: Bit reset register
+    REG32 MODER;        // Offset 0x00: Mode register
+    REG16 OTYPER;       // Offset 0x04: Output type register
+    uint16_t RESERVED0; // Reserved
+    REG32 OSPEEDR;      // Offset 0x08: Output speed register
+    REG32 PUPDR;        // Offset 0x0C: Pull-up/pull-down register
+    REG16 IDR;          // Offset 0x10: Input data register
+    uint16_t RESERVED1; // Reserved
+    REG16 ODR;          // Offset 0x14: Output data register
+    uint16_t RESERVED2; // Reserved
+    REG32 BSRR;         // Offset 0x18: Bit set/reset register
+    REG32 LCKR;         // Offset 0x1C: Configuration lock register
+    REG32 AFRL;         // Offset 0x20: Alternate function low register
+    REG32 AFRH;         // Offset 0x24: Alternate function high register
+    REG16 BRR;          // Offset 0x28: Bit reset register
+    uint16_t RESERVED3; // Reserved
+    REG16 ASCR;         // Offset 0x2C: Analog switch control register
+    uint16_t RESERVED4; // Reserved
 } GPIO_TypeDef;
 
 // base addresses
