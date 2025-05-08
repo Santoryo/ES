@@ -18,36 +18,39 @@ Pin digits[] = {
 };
 
 Pin joystick[] = {
-		{GPIOE, 2}, //DOWN
-		{GPIOE, 0}, //RIGHT
-		{GPIOE, 1}, //LEFT
-		{GPIOE, 15} //CLICK/OK
+		{GPIOE, 2}, // DOWN
+		{GPIOE, 0}, // RIGHT
+		{GPIOE, 1}, // LEFT
+		{GPIOE, 15} // CLICK/OK
 };
+
+#define JOYSTICK_DOWN   joystick[0]
+#define JOYSTICK_RIGHT  joystick[1]
+#define JOYSTICK_LEFT 	joystick[2]
+#define JOYSTICK_CLICK 	joystick[3]
+#define DELAY_IN_MS 1000
 
 #define ON 1
 #define OFF 0
 
 int numbers[10][7] = {
-    {ON, ON, ON, ON, ON, ON, OFF}, // 0
+    {ON, ON, ON, ON, ON, ON, OFF},     // 0
     {OFF, ON, ON, OFF, OFF, OFF, OFF}, // 1
-    {ON, ON, OFF, ON, ON, OFF, ON},   // 2
+    {ON, ON, OFF, ON, ON, OFF, ON},    // 2
     {ON, ON, ON, ON, OFF, OFF, ON},    // 3
-    {OFF, ON, ON, OFF, OFF, ON, ON},  // 4
-    {ON, OFF, ON, ON, OFF, ON, ON},   // 5
-    {ON, OFF, ON, ON, ON,  ON, ON},   // 6
+    {OFF, ON, ON, OFF, OFF, ON, ON},   // 4
+    {ON, OFF, ON, ON, OFF, ON, ON},    // 5
+    {ON, OFF, ON, ON, ON,  ON, ON},    // 6
     {ON, ON, ON, OFF, OFF, OFF, OFF},  // 7
-    {ON, ON, ON, ON, ON, ON, ON},    // 8
-    {ON, ON, ON, ON, OFF, ON, ON}     // 9
+    {ON, ON, ON, ON, ON, ON, ON},      // 8
+    {ON, ON, ON, ON, OFF, ON, ON}      // 9
 };
-
-int counter = 0;
-int cycle = 0;
-
 
 #define COUNTER_MAX 9999
 #define COUNTER_MIN 0
 
-#define DELAY 50
+int counter = COUNTER_MIN;
+int cycle = 0;
 
 void init_seven_segment()
 {
@@ -110,7 +113,7 @@ void setNumber(int num)
 		  gpio_write_pin(seventSegmentDisplay[i].port, seventSegmentDisplay[i].pin, numbers[d[j]][i]);
 	  }
 	  gpio_write_pin(digits[j].port, digits[j].pin, HIGH);
-	  delay_ms(1);
+	  delay(15);
 	  gpio_write_pin(digits[j].port, digits[j].pin, LOW);
 	}
 }
@@ -120,15 +123,15 @@ int main(void)
 {
 	init_seven_segment();
 	init_joystick();
-	tim6_init();
+	tim6_init(3999, DELAY_IN_MS - 1); // 1s delay
 	while(1)
 	{
-		int clicked = !gpio_read_pin(GPIOE, 15);
+		int clicked = !gpio_read_pin(JOYSTICK_CLICK.port, JOYSTICK_CLICK.pin);
 		setNumber(counter);
 
-		 if (read_bit(&TIM6->SR, 0))
+		 if (READ_BIT(TIM6->SR, 0))
 		 {
-			clear_bit(&TIM6->SR, 0);
+			CLEAR_BIT(TIM6->SR, 0);
 		 	clicked ? counter-- : counter++;
 
 		 	if(counter > COUNTER_MAX)
