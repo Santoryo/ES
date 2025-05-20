@@ -1,0 +1,13 @@
+../Src/gpiodriver.h:170:6:activate_clock_for	1
+../Src/gpiodriver.h:175:6:gpio_init	1
+../Src/gpiodriver.h:189:6:gpio_write_pin	2
+../Src/gpiodriver.h:201:10:gpio_read_pin	1
+../Src/gpiodriver.h:206:6:enable_VddIO2	1
+../Src/gpiodriver.h:293:6:tim6_init	1
+../Src/gpiodriver.h:301:6:delay	2
+../Src/lpuart.h:29:5:LPUART_init	1
+../Src/lpuart.h:78:5:LPUART_SendChar	2
+../Src/lpuart.h:84:5:LPUART_ReceiveChar	2
+../Src/lpuart.h:92:5:LPUART_SendString	2
+../Src/main.c:4:6:change_case_and_echo	6
+../Src/main.c:18:5:main	3
