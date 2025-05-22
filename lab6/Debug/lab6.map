@@ -915,11 +915,11 @@ LOAD C:/ST/STM32CubeIDE_1.18.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_line    0x0000070f      0x502 ./Src/system_stm32l4xx.o
  .debug_line    0x00000c11       0x7b ./Startup/startup_stm32l496zgtx.o
 
-.debug_str      0x00000000     0x4a44
- .debug_str     0x00000000     0x4a44 ./Src/main.o
+.debug_str      0x00000000     0x4a0d
+ .debug_str     0x00000000     0x4a0d ./Src/main.o
                                0x46a1 (size before relaxing)
- .debug_str     0x00004a44     0x43a0 ./Src/system_stm32l4xx.o
- .debug_str     0x00004a44       0x76 ./Startup/startup_stm32l496zgtx.o
+ .debug_str     0x00004a0d     0x43a0 ./Src/system_stm32l4xx.o
+ .debug_str     0x00004a0d       0x76 ./Startup/startup_stm32l496zgtx.o
 
 .comment        0x00000000       0x43
  .comment       0x00000000       0x43 ./Src/main.o
