@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.ts": "typescript",
+        "*.html": "html",
+        "stdlib.h": "c"
+    }
+}
