@@ -2,6 +2,13 @@
     "files.associations": {
         "*.ts": "typescript",
         "*.html": "html",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "7led.h": "c",
+        "gpiodriver.h": "c",
+        "commands.h": "c",
+        "string.h": "c",
+        "lpuart.h": "c",
+        "joystick.h": "c",
+        "constants.h": "c"
     }
 }

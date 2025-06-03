@@ -1,2 +1,35 @@
-.metadata
-*/.settings
+**/.metadata/
+**/.settings/
+
+# Ignore build directories for all projects
+**/Debug/
+**/Release/
+
+# Ignore STM32CubeIDE launch files for all projects
+**/*.launch
+
+# Ignore temporary files for all projects
+**/*.swp
+**/*.tmp
+**/*.bak
+
+# Ignore object files and binaries for all projects
+**/*.o
+**/*.elf
+**/*.bin
+**/*.hex
+**/*.map
+
+# Ignore dependency files for all projects
+**/*.d
+
+# Ignore generated files for all projects
+**/*.a
+**/*.log
+
+# Ignore IDE-specific files for all projects
+**/.vscode/
+**/.idea/
+
+# Ignore auto-generated files by STM32CubeMX for all projects
+**/*.ioc

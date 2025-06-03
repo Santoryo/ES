@@ -1,78 +1,118 @@
 #include "lpuart.h"
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h> 
+#include "commands.h"
+#include "7LED.h"
 #include "gpiodriver.h"
+#include "Joystick.h"
 
 #define BACKSPACE 8
 #define DELETE 127
 #define MAX_INPUT_LEN 128
 
+unsigned char ch;
+unsigned char buffer[MAX_INPUT_LEN];
+unsigned char tLevel[] = "";
+int idx = 0;
+int counter = 0;
+void to_lowercase(char *str);
+void new_line();
+
+void check_command()
+{
+    buffer[idx] = '\0';
+
+    char *cmd = strtok((char *)buffer, " ");
+    char *args = strtok(NULL, "");
+
+    if (cmd == NULL) return;
+
+    to_lowercase(cmd);
+
+    Command *cmd_list = get_current_commands();
+    int cmd_count = 0;
+
+    while(cmd_list[cmd_count].command != NULL)
+    {
+        if (strcmp(cmd, cmd_list[cmd_count].command) == 0)
+        {
+            if (cmd_list[cmd_count].function)
+                cmd_list[cmd_count].function(args);
+            else
+                LPUART_SendString("Command exists but not implemented.\r\n");
+            return;
+        }
+        cmd_count++;
+    }
+
+    LPUART_SendString("Unknown command. Type 'help'.\r\n");
+    strcpy(buffer, "");
+    idx = 0;
+}
+
+
 void change_case_and_echo(void)
 {
-    unsigned char ch;
-    unsigned char buffer[MAX_INPUT_LEN];
-    int index = 0;
-
     while (1)
     {
         if (LPUART_ReceiveChar(&ch) == 0)
         {
             if (ch == BACKSPACE || ch == DELETE)
             {
-                if (index > 0)
+                if (idx > 0)
                 {
-                    index--; // remove last char from buffer
-
-                    // Send backspace sequence to terminal: move back, erase, move back
+                    idx--;
                     LPUART_SendChar('\b');
                     LPUART_SendChar(' ');
                     LPUART_SendChar('\b');
                 }
             }
-            else if (ch == '\r' || ch == '\n') // handle enter key if needed
+            else if (ch == '\r' || ch == '\n')
             {
-                LPUART_SendChar('\r');
-                LPUART_SendChar('\n');
-                index = 0; // reset buffer
+                new_line();
+                buffer[idx] = '\0';
+                check_command();
+                idx = 0;
+                buffer[0] = '\0';
+                LPUART_SendString((unsigned char *)get_current_prefix());
+                LPUART_SendString(">");
             }
             else
             {
-                // Convert case
-                if (ch >= 'a' && ch <= 'z')
+                if (idx < MAX_INPUT_LEN - 1)
                 {
-                    ch -= 32;
-                }
-                else if (ch >= 'A' && ch <= 'Z')
-                {
-                    ch += 32;
-                }
-
-                // Echo and store only if buffer not full
-                if (index < MAX_INPUT_LEN - 1)
-                {
-                    buffer[index++] = ch;
+                    buffer[idx++] = ch;
                     LPUART_SendChar(ch);
                 }
             }
         }
+
+        sled_display();
     }
 }
+
+void new_line()
+{
+    LPUART_SendChar('\r');
+    LPUART_SendChar('\n');
+}
+
+void to_lowercase(char *str) {
+    while (*str) {
+        *str = tolower((unsigned char)*str);
+        str++;
+    }
+}
+
 
 int main(void)
 {
     LPUART_init();
-    init_seven_segment();
-
-    // Send alphabet
-    for (char c = 'a'; c <= 'z'; c++)
-    {
-        LPUART_SendChar(c);
-    }
-    for (char c = 'A'; c <= 'Z'; c++)
-    {
-        LPUART_SendChar(c);
-    }
+    sled_init();
 
     // Send welcome string
-    LPUART_SendString((unsigned char *)"\r\nWelcome message\r\n");
+    LPUART_SendString((unsigned char *)"\r\nSimple menu by 252575\r\nWrite `help` to obtain more information");
 
     change_case_and_echo();
 
