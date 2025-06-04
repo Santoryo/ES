@@ -52,7 +52,10 @@ void tim6_init(uint16_t prescaler, uint16_t autoreload)
     activate_clock_for(&RCC->APB1ENR1, 4);  // Enable TIM6 clock (bit 4 of APB1ENR1)
     TIM6->PSC = prescaler;
     TIM6->ARR = autoreload;
+    TIM6->DIER |= (1 << 0);  // Enable update interrupt
     TIM6->CR1 |= (1 << 0);  // Enable TIM6 counter
+
+    *(NVIC_ISER1) |= (1 << 22);  // Enable TIM6 interrupt in NVIC (IRQ 54)
 }
 
 // Simple delay loop

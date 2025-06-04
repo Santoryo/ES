@@ -6,10 +6,11 @@
 #include "7LED.h"
 #include "gpiodriver.h"
 #include "Joystick.h"
+#include "LED.h"
 
 #define BACKSPACE 8
 #define DELETE 127
-#define MAX_INPUT_LEN 128
+#define MAX_INPUT_LEN 25
 
 unsigned char ch;
 unsigned char buffer[MAX_INPUT_LEN];
@@ -19,16 +20,21 @@ int counter = 0;
 void to_lowercase(char *str);
 void new_line();
 
+int interruptCycles = 0;
+
+#define LED_BLINK_INTERVAL 250
+#define INTERRUPT_LENGTH 5
+
 void check_command()
 {
     buffer[idx] = '\0';
+
+    to_lowercase((char *)buffer);
 
     char *cmd = strtok((char *)buffer, " ");
     char *args = strtok(NULL, "");
 
     if (cmd == NULL) return;
-
-    to_lowercase(cmd);
 
     Command *cmd_list = get_current_commands();
     int cmd_count = 0;
@@ -40,22 +46,20 @@ void check_command()
             if (cmd_list[cmd_count].function)
                 cmd_list[cmd_count].function(args);
             else
-                LPUART_SendString("Command exists but not implemented.\r\n");
+                print("Command exists but not implemented.\r\n");
             return;
         }
         cmd_count++;
     }
 
-    LPUART_SendString("Unknown command. Type 'help'.\r\n");
-    strcpy(buffer, "");
+    print("Unknown command. Type 'help'.\r\n");
+    strcpy((char *)buffer, "");
     idx = 0;
 }
 
 
-void change_case_and_echo(void)
+void input(void)
 {
-    while (1)
-    {
         if (LPUART_ReceiveChar(&ch) == 0)
         {
             if (ch == BACKSPACE || ch == DELETE)
@@ -75,8 +79,8 @@ void change_case_and_echo(void)
                 check_command();
                 idx = 0;
                 buffer[0] = '\0';
-                LPUART_SendString((unsigned char *)get_current_prefix());
-                LPUART_SendString(">");
+                print(get_current_prefix());
+                print(">");
             }
             else
             {
@@ -86,9 +90,6 @@ void change_case_and_echo(void)
                     LPUART_SendChar(ch);
                 }
             }
-        }
-
-        sled_display();
     }
 }
 
@@ -110,11 +111,35 @@ int main(void)
 {
     LPUART_init();
     sled_init();
+    joystick_init();
+    LED_init();
+    tim6_init(3999, INTERRUPT_LENGTH - 1); 
 
     // Send welcome string
-    LPUART_SendString((unsigned char *)"\r\nSimple menu by 252575\r\nWrite `help` to obtain more information");
+    print("\r\nSimple menu by 252575\r\nWrite `help` to obtain more information\r\n");
+    print(get_current_prefix());
+    print(">");
 
-    change_case_and_echo();
+    while(1)
+    {
+        input();
+    }
 
     return 0;
 }
+
+void TIM6_DACUNDER_IRQHandler(void)
+{
+    if (READ_BIT(TIM6->SR, 0))
+    {
+        CLEAR_BIT(TIM6->SR, 0);
+        sled_display();
+        interruptCycles++;
+        if (interruptCycles >= LED_BLINK_INTERVAL / 5)
+        {
+            interruptCycles = 0;
+            LED_blink();
+        }
+    }
+}
+

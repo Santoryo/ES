@@ -25,7 +25,7 @@ void check_command()
 }
 
 
-void change_case_and_echo(void)
+void input(void)
 {
     while (1)
     {
@@ -71,7 +71,7 @@ int main(void)
     // Send welcome string
     LPUART_SendString((unsigned char *)"\r\nSimple menu by lucy\r\nWrite `help` to obtain more information");
 
-    change_case_and_echo();
+    input();
 
     return 0;
 }

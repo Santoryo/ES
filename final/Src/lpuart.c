@@ -82,3 +82,16 @@ int LPUART_SendString(unsigned char *str)
     }
     return 0;
 }
+
+void printc(const char *str, const char *color)
+{
+    LPUART_SendString((unsigned char *)color);
+    LPUART_SendString((unsigned char *)str);
+    LPUART_SendString((unsigned char *)COLOR_RESET);
+}
+
+void print(const char *str)
+{
+    LPUART_SendString((unsigned char *)str);
+}
+

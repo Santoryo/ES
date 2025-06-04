@@ -9,6 +9,7 @@
         "string.h": "c",
         "lpuart.h": "c",
         "joystick.h": "c",
-        "constants.h": "c"
+        "constants.h": "c",
+        "led.h": "c"
     }
 }

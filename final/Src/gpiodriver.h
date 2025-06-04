@@ -248,6 +248,10 @@ typedef struct
 #define TIM6_BASE (0x40001000)
 #define TIM6 ((TIMx_TypeDef *)TIM6_BASE)
 
+#define NVIC_BASE (0xE000E100)
+#define NVIC_ISER1 ((volatile uint32_t *)(NVIC_BASE + 0x04)) // Interrupt Set-Enable Register 1
+
+
 // FUNCTIONS
 void activate_clock_for(REG32 *reg, int gpio_en_bit);
 void gpio_init(GPIO_TypeDef *GPIOx, GPIO_InitStruct *init);
@@ -256,3 +260,5 @@ uint32_t gpio_read_pin(GPIO_TypeDef *GPIOx, uint32_t pin);
 void enable_VddIO2();
 void tim6_init(uint16_t prescaler, uint16_t autoreload);
 void delay(uint32_t val);
+
+

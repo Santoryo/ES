@@ -8,6 +8,9 @@ int LPUART_SendChar(unsigned char data);
 int LPUART_ReceiveChar(unsigned char *data);
 int LPUART_SendString(unsigned char *data);
 
+void printc(const char *str, const char *color);
+void print(const char *str);
+
 typedef struct
 {
     REG32 CR1;       // Offset 0x00: Control Register 1
@@ -26,3 +29,13 @@ typedef struct
 } LPUART_TypeDef;
 
 #define LPUART ((LPUART_TypeDef *)LPUART_BASE)
+
+// Terminal Colors
+#define COLOR_RESET "\x1b[0m"
+#define COLOR_GREEN "\x1b[32m"
+#define COLOR_RED "\x1b[31m"
+#define COLOR_YELLOW "\x1b[33m"
+#define COLOR_BLUE "\x1b[34m"
+#define COLOR_MAGENTA "\x1b[35m"
+#define COLOR_CYAN "\x1b[36m"
+#define COLOR_WHITE "\x1b[37m"

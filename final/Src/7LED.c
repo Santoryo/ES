@@ -1,6 +1,7 @@
 #include "7LED.h"
 
 int sled_value = SLED_MIN;
+int current_digit = 0;
 
 Pin seventSegmentDisplay[] = {
     { GPIOG, 0 }, // A
@@ -71,17 +72,17 @@ void sled_display()
 			(sled_value / 10) % 10,
 			(sled_value) % 10
 	};
-
-	for(int j = 0; j < 4; j++)
-	{
-	  for(int i = 0; i < 7; i++)
-	  {
-		  gpio_write_pin(seventSegmentDisplay[i].port, seventSegmentDisplay[i].pin, numbers[d[j]][i]);
-	  }
-	  gpio_write_pin(digits[j].port, digits[j].pin, HIGH);
-	  delay(15);
-	  gpio_write_pin(digits[j].port, digits[j].pin, LOW);
+	
+	for (int k = 0; k < 4; k++) {
+		gpio_write_pin(digits[k].port, digits[k].pin, LOW);
 	}
+
+	for (int i = 0; i < 7; i++) {
+		gpio_write_pin(seventSegmentDisplay[i].port, seventSegmentDisplay[i].pin, numbers[d[current_digit]][i]);
+	}
+
+	gpio_write_pin(digits[current_digit].port, digits[current_digit].pin, HIGH);
+	current_digit = (current_digit + 1) % 4;
 }
 
 int sled_get()

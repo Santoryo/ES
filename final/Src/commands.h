@@ -21,6 +21,18 @@ void help_cmd(char *args);
 void sled_cmd_display(char *args);
 void sled_cmd_read(char *args);
 
+// Joystick level commands
+void joy_cmd_read(char *args);
+
+// LPUART level commands
+void lpuart_cmd_status(char *args);
+
+// LED level commands
+void led_cmd_set(char *args);
+void led_cmd_clear(char *args);
+void led_cmd_status(char *args);
+void led_cmd_blink(char *args);
+void led_cmd_toggle(char *args);
 
 Command* get_current_commands();
 char* get_current_prefix();
