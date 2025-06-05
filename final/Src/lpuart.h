@@ -2,14 +2,25 @@
 #include "gpiodriver.h"
 #define LPUART_BASE (0x40008000)
 #define LPUARTEN 0
+#define LPUARTDIV 115200
 
 int LPUART_init(void);
 int LPUART_SendChar(unsigned char data);
 int LPUART_ReceiveChar(unsigned char *data);
 int LPUART_SendString(unsigned char *data);
 
-void printc(const char *str, const char *color);
 void print(const char *str);
+int get_baud_rate(void);
+char* get_stop_bits(void);
+char* get_m_bits(void);
+char* get_parity(void);
+
+// M-Bits used for word length
+#define CR1_M1 28
+#define CR1_M0 12
+
+#define CR1_PCE 10
+#define CR2_STOP_BIT 12
 
 typedef struct
 {
@@ -30,12 +41,3 @@ typedef struct
 
 #define LPUART ((LPUART_TypeDef *)LPUART_BASE)
 
-// Terminal Colors
-#define COLOR_RESET "\x1b[0m"
-#define COLOR_GREEN "\x1b[32m"
-#define COLOR_RED "\x1b[31m"
-#define COLOR_YELLOW "\x1b[33m"
-#define COLOR_BLUE "\x1b[34m"
-#define COLOR_MAGENTA "\x1b[35m"
-#define COLOR_CYAN "\x1b[36m"
-#define COLOR_WHITE "\x1b[37m"

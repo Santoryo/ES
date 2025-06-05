@@ -4,12 +4,14 @@
 #include "lpuart.h"
 #include "Joystick.h"
 #include "LED.h"
+#include <ctype.h>
 
 Command root_commands[] = {
     {"up", root_cmd, "Go to root level"},
     {"7led", sled_cmd, "Go to 7-LED level"},
     {"led", led_cmd, "Go to LED level"},
     {"joy", joy_cmd, "Go to Joystick level"},
+    {"lpuart", lpuart_cmd, "Go to LPUART level"},
     {"help", help_cmd, "Display this help message"},
     {NULL, NULL, NULL} // End of command list
 };
@@ -42,7 +44,7 @@ Command joy_commands[] = {
 
 Command lpuart_commands[] = {
     {"up", root_cmd, "Go to root level"},
-    {"status", lpuart_cmd_status, "Display baudrate, number of databits and parity bits, informations read from registers and then calculated baudrate"},
+    {"status", lpuart_cmd_status, "Display baudrate, number of databits, stopbit and parity bits"},
     {"help", help_cmd, "Display this help message"},
     {NULL, NULL, NULL} // End of command list
 };
@@ -57,7 +59,7 @@ int empty_args(char *args, char *cmd_name)
     {
         char message[100];
         snprintf(message, sizeof(message), "Usage: %s <value>\r\n", cmd_name);
-        printc(message, COLOR_YELLOW);
+        print(message);
         return -1;
     }
     return 0;
@@ -117,14 +119,14 @@ void sled_cmd_display(char *args)
 
     if (*endptr != '\0' || args == endptr)
     {
-        printc("Invalid value. Please enter a number between 0 and 9999.\r\n", COLOR_RED);
+        print("Invalid value. Please enter a number between 0 and 9999.\r\n");
         return;
     }
 
     int res = sled_set(value);
     if (res)
     {
-        printc("Number has to be a value between 0 and 9999.\r\n", COLOR_RED);
+        print("Number has to be a value between 0 and 9999.\r\n");
         return;
     }
 }
@@ -134,7 +136,7 @@ void sled_cmd_read(char *args)
     char val_str[5];
     snprintf(val_str, sizeof(val_str), "%d", sled_get());
     print("Current value on 7-LED display: ");
-    printc(val_str, COLOR_CYAN);
+    print(val_str);
     print("\r\n");
 }
 
@@ -149,29 +151,26 @@ void joy_cmd_read(char *args)
 
     if(state == -1)
     {
-        printc("Invalid joystick ID. Use 'D', 'R', 'L', or 'C'.\r\n", COLOR_RED);
+        print("Invalid joystick ID. Use 'D', 'R', 'L', or 'C'.\r\n");
         return;
     }
 
-    print("Joystick state for '");
-    printc(&id, COLOR_CYAN);
-    print("': ");
-    if (state)
-    {
-        printc("Pressed\r\n", COLOR_GREEN);
-    }
-    else
-    {
-        printc("Released\r\n", COLOR_RED);
-    }
-    print("\r\n");
+    char message[50];
+    char id_upper = toupper((unsigned char)id);
+    sprintf(message, "Joystick state for '%c': %s\r\n", id_upper, state ? "Pressed" : "Released");
+    print(message);
 }
 
 void lpuart_cmd_status(char *args)
 {
-    // This function should display the status of the LPUART.
-    // For now, we will just send a placeholder message.
-    print("LPUART status: Placeholder for actual status.\r\n");
+    char message[150];
+    char* stop_bits = get_stop_bits();
+    int baud_rate = get_baud_rate();
+    char* word_length = get_m_bits();
+    char* parity = get_parity();
+
+    snprintf(message, sizeof(message), "Baudrate: %d\r\nWord Length: %s\r\nStop Bits: %s\r\nParity: %s\r\n", baud_rate, word_length, stop_bits, parity);
+    print(message);
 }
 
 void led_cmd_set(char *args)
@@ -183,7 +182,7 @@ void led_cmd_set(char *args)
     int res = LED_set(id, ON);
     if (res == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
     }
 }
 
@@ -196,7 +195,7 @@ void led_cmd_clear(char *args)
     int res = LED_set(id, OFF);
     if (res == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
     }
 }
 
@@ -209,7 +208,7 @@ void led_cmd_blink(char *args)
     int res = LED_set_blink(id, 5);
     if (res == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
         return;
     }
 }
@@ -219,25 +218,24 @@ void led_cmd_status(char *args)
     if (empty_args(args, "read"))
         return;
 
+    if(strlen(args) != 1)
+    {
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
+        return;
+    }
+
     char id = args[0];
     int state = LED_get(id);
     if (state == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
         return;
     }
 
-    print("LED ");
-    printc(&id, COLOR_CYAN);
-    print(" state: ");
-    if (state)
-    {
-        printc("ON\r\n", COLOR_GREEN);
-    }
-    else
-    {
-        printc("OFF\r\n", COLOR_RED);
-    }
+    char message[50];
+    char id_upper = toupper((unsigned char)id);
+    sprintf(message, "LED '%c' state: %s\r\n", id_upper, state ? "ON" : "OFF");
+    print(message);
 }
 
 void led_cmd_toggle(char *args)
@@ -249,7 +247,7 @@ void led_cmd_toggle(char *args)
     int state = LED_get(id);
     if (state == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
         return;
     }
 
@@ -257,26 +255,15 @@ void led_cmd_toggle(char *args)
 
     if (res == -1)
     {
-        printc("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n", COLOR_RED);
+        print("Invalid LED ID. Use 0-7 or 'R', 'G', 'B'.\r\n");
         return;
     }
 
-    print("LED ");
-    printc(&id, COLOR_CYAN);
-    print(" toggled to ");
-    if (!state)
-    {
-        printc("ON\r\n", COLOR_GREEN);
-    }
-    else
-    {
-        printc("OFF\r\n", COLOR_RED);
-    }
+    char message[50];
+    char id_upper = toupper((unsigned char)id);
+    sprintf(message, "LED '%c' toggled to %s\r\n", id_upper, !state ? "ON" : "OFF");
+    print(message);
 }
-
-
-
-
 
 Command *get_current_commands()
 {

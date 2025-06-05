@@ -14,6 +14,7 @@ typedef uint8_t RESTRICTED8;
 #define SET_BIT(REG, BIT_POS) ((REG) |= (1 << (BIT_POS)))
 #define CLEAR_BIT(REG, BIT_POS) ((REG) &= ~(1 << (BIT_POS)))
 #define READ_BIT(REG, BIT_POS) (((REG) & (1 << (BIT_POS))) ? 1 : 0)
+#define F_CK 4000000
 
 // GPIO STRUCT
 typedef struct

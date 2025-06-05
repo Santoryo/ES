@@ -1,7 +1,30 @@
 #include "lpuart.h"
+#include <stdlib.h>
 
 Pin vCOM_TX = {GPIOC, 0};
 Pin vCOM_RX = {GPIOC, 1};
+
+typedef struct {
+    int val;
+    const char *description;
+} Bit_Description;
+
+Bit_Description stopBits[] =
+{
+    {0, "1 stop bit"},
+    {1, "Reserved"},
+    {2, "2 stop bits"},
+    {3, "Reserved"},
+    {-1, NULL}
+};
+
+Bit_Description MBits[] =
+{
+    {0, "1 star bit, 8 data bits"},
+    {1, "1 start bit, 9 data bits"},
+    {2, "0 start bit, 7 data bits"},
+    {-1, NULL}
+};
 
 int LPUART_init(void)
 {
@@ -30,14 +53,17 @@ int LPUART_init(void)
     CLEAR_BIT(LPUART->CR1, 0);
 
     // 1 Start bit, 8 data bits, n stop bits
-    CLEAR_BIT(LPUART->CR1, 12);
-    CLEAR_BIT(LPUART->CR1, 28);
+    CLEAR_BIT(LPUART->CR1, CR1_M1);
+    CLEAR_BIT(LPUART->CR1, CR1_M0);
 
     // Tx/Rx baud = (256 * f_ck) / LPUARTDIV
-    LPUART->BRR = (256 * 4000000) / 115200;
+    LPUART->BRR = (256 * F_CK) / LPUARTDIV;
 
     // 1 stop bit
-    LPUART->CR2 &= ~(0b11 << 12);
+    LPUART->CR2 &= ~(0b11 << CR2_STOP_BIT);
+
+    // Disable parity
+    CLEAR_BIT(LPUART->CR1, CR1_PCE);
 
     // Enable LPUART
     SET_BIT(LPUART->CR1, 0);
@@ -83,15 +109,65 @@ int LPUART_SendString(unsigned char *str)
     return 0;
 }
 
-void printc(const char *str, const char *color)
-{
-    LPUART_SendString((unsigned char *)color);
-    LPUART_SendString((unsigned char *)str);
-    LPUART_SendString((unsigned char *)COLOR_RESET);
-}
-
 void print(const char *str)
 {
     LPUART_SendString((unsigned char *)str);
 }
+
+int get_baud_rate(void)
+{
+    return (256 * F_CK) / LPUART->BRR;
+}
+
+char* get_stop_bits(void)
+{
+    int stopBitsValue = READ_BIT(LPUART->CR2, CR2_STOP_BIT);
+    int i = 0;
+    while(stopBits[i].val != -1)
+    {
+        if (stopBits[i].val == stopBitsValue)
+        {
+            return (char *)stopBits[i].description;
+        }
+        i++;
+    }
+    return "Unknown stop bits";
+}
+
+char* get_m_bits(void)
+{
+    int m0 = READ_BIT(LPUART->CR1, CR1_M0);
+    int m1 = READ_BIT(LPUART->CR1, CR1_M1);
+    int mBitsValue = (m1 << 1) | m0;
+    int i = 0;
+    while(MBits[i].val != -1)
+    {
+        if (MBits[i].val == mBitsValue)
+        {
+            return (char *)MBits[i].description;
+        }
+        i++;
+    }
+    return "Unknown M bits";
+}
+
+char* get_parity(void)
+{
+    if (!READ_BIT(LPUART->CR1, CR1_PCE))
+    {
+        return "Parity disabled";
+    }
+    if (READ_BIT(LPUART->CR1, CR1_PCE) && READ_BIT(LPUART->CR1, 9))
+    {
+        return "Even parity";
+    }
+    else if (READ_BIT(LPUART->CR1, CR1_PCE) && !READ_BIT(LPUART->CR1, 9))
+    {
+        return "Odd parity";
+    }
+    return "Unknown parity setting";
+}
+
+
+
 
