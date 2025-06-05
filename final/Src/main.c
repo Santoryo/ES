@@ -55,7 +55,8 @@ void check_command(void)
 
     while (cmd_list[cmd_count].command != NULL)
     {
-        if (strcmp(cmd, cmd_list[cmd_count].command) == 0)
+        // if (strcmp(cmd, cmd_list[cmd_count].command) == 0)
+        if(!strncmp(cmd, cmd_list[cmd_count].command, strlen(cmd)))
         {
             if (cmd_list[cmd_count].function)
             {
